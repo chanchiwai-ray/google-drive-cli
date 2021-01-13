@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+from pydrivecli import PyDriveCLI
+
+if __name__ == "__main__":
+    cli = PyDriveCLI()
+    cli.main()

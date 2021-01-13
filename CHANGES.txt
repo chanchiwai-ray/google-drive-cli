@@ -1,0 +1,17 @@
+v1.0.dev0, 2021-1-20
+
+Starting development project.
+
++ gdrive
+    + create
+    + delete
+    + download
+    + list
+    + move
+    + rename
+    + trash
+    + untrash
+    + upload
+
++ gdrive-auth
++ gdrive-config
