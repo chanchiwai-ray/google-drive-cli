@@ -21,9 +21,9 @@ python3 setup.py install
 
 ### The authentication and authorization process
 
-Since this command line tool is making use of the Google Drive API v2, you need to download the applcation configuration file from the Google API Console. For details, please see this [guide] (https://developers.google.com/drive/api/v2/enable-drive-api) on how to enable the Drive API.
+Since this command line tool is making use of the Google Drive API v2, you need to download the applcation configuration file from the Google API Console. For details, please see this [guide](https://developers.google.com/drive/api/v2/enable-drive-api) on how to enable the Drive API.
 
-Once you have the client configuration file, you can proceed to create the command-line tool with the configuration file and authencate the user (which is you in this case) and authorize the command-line tool to access your google drive (also see this [guide] (https://developers.google.com/drive/api/v2/about-auth)). Typically, you want to do this step once, so you need to save the your access token and your client configuration into a settings file. For example:
+Once you have the client configuration file, you can proceed to create the command-line tool with the configuration file and authencate the user (which is you in this case) and authorize the command-line tool to access your google drive (also see this [guide](https://developers.google.com/drive/api/v2/about-auth)). Typically, you want to do this step once, so you need to save the your access token and your client configuration into a settings file. For example:
 
 ```
 gdrive-auth --save-credentials --get-refresh-token --client-config-file <your_configuration_file.json>
