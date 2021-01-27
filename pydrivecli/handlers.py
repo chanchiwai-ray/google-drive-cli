@@ -153,7 +153,6 @@ class DownloadHandler(Handler):
             self.export_format = utils.ExportFormat()
         else:
             self.export_format = None
-        print(self.export_format)
 
         # process file filter options
         if options.query:
