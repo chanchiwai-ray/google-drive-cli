@@ -245,6 +245,61 @@ def append_rename_options(subparsers):
         help = "Allow duplicated name. (Optional)"
     )
 
+def append_share_options(subparsers):
+    share_opts = subparsers.add_parser(
+        "share",
+        prog = "gdrive share",
+        help = "Get a shareable link with certain permissions. (Also see 'gdrive permission' command)"
+    )
+    share_opts.add_argument(
+        "ids",
+        nargs = "+",
+        help = "Set the ids of the files or folders to be shared."
+    )
+    share_opts.add_argument(
+        "-t", "--type",
+        default = "anyone",
+        choices = ["user", "group", "domain", "anyone"],
+        help = "Set the account type. Availiable values are: user, group, domain or anyone. (Default: anyone)"
+    )
+    share_opts.add_argument(
+        "-u", "--user",
+        help = "Set the email address of the user who you want to share file of folder with. (Optional, and required only --type=user)"
+    )
+    access_control_opt_group = share_opts.add_mutually_exclusive_group()
+    access_control_opt_group.add_argument(
+        "-w", "--writable",
+        action = "store_true",
+        help = "Set the shared file to be writable."
+    )
+    access_control_opt_group.add_argument(
+        "-r", "--readable",
+        action = "store_true",
+        help = "Set the shared file to be  readable. (Default)"
+    )
+
+def append_unshare_options(subparsers):
+    unshare_opts = subparsers.add_parser(
+        "unshare",
+        prog = "gdrive unshare",
+        help = "Unshare a file or link. (Also see 'gdrive permission' command)"
+    )
+    unshare_opts.add_argument(
+        "ids",
+        nargs = "+",
+        help = "Set the ids of the files or folders to be unshared."
+    )
+    unshare_opts.add_argument(
+        "-t", "--type",
+        default = "anyone",
+        choices = ["user", "group", "domain", "anyone"],
+        help = "Set the account type. Availiable values are: user, group, domain or anyone. (Default: anyone)"
+    )
+    unshare_opts.add_argument(
+        "-u", "--user",
+        help = "Set the email address of the user who you want to unshare the file or folder with. (Optional, and required only --type=user)"
+    )
+
 def parse_command_line():
     parser = ArgumentParser(
         description = "The command line interface for google drive. You can choose one of the commands from below to perform various operations on your google drive."
@@ -262,6 +317,8 @@ def parse_command_line():
     append_trash_options(subparsers)
     append_untrash_options(subparsers)
     append_upload_options(subparsers)
+    append_share_options(subparsers)
+    append_unshare_options(subparsers)
 
     return parser.parse_args()
 

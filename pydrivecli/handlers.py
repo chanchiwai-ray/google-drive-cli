@@ -33,6 +33,10 @@ def create_handler(type):
         return MoveHandler()
     elif type == "rename":
         return RenameHandler()
+    elif type == "share":
+        return ShareHandler()
+    elif type == "unshare":
+        return UnShareHandler()
     else:
         raise NotImplementedError(f"{type} handler has not been implemented.")
 
@@ -477,3 +481,87 @@ class RenameHandler(Handler):
             print("error: cannot rename this file %s; %s" % (self.old_name, str(e)))
         else:
             print("renamed '%s' to '%s'" % (self.old_name, file["title"]))
+
+
+class ShareHandler(Handler):
+    def __init__(self):
+        super().__init__("share")
+        self.status = []
+
+    def process(self, options):
+        self.files = [self.drive.CreateFile(metadata = {"id": id}) for id in options.ids]
+        self.type = options.type
+        self.value = options.user
+        if options.writable:
+            self.role = "writer"
+        elif options.readable:
+            self.role = "reader"
+        else:
+            self.role = "reader"
+    
+    def execute(self):
+        tasks = []
+        for file in self.files:
+            file.FetchMetadata(fields = "title,alternateLink,permissions")
+            task = threading.Thread(
+                target = self.share,
+                args = (file,)
+            )
+            task.start()
+            tasks.append(task)
+        for task in tasks:
+            task.join()
+        print("".join(self.status))
+
+    def share(self, file):
+        status = []
+        try:
+            file.InsertPermission({"type": self.type, "role": self.role, "value": self.value}) 
+        except ApiRequestError as e:
+            status.append("error: cannot share this file %s(%s); %s\n" % (file["title"], file["id"], str(e)))
+        else:
+            status.append("shared %s (%s)\naccess the file with %s\n" % (file["title"], file["id"], file["alternateLink"]))
+            status.append("currently, %s (%s) is being shared with the following users: \n" % (file["title"], file["id"]))
+            for i in file["permissions"]:
+                status.append(">> %-s (%-s) (role: %s)\n"  % (i.get("name") or i.get("id"), i.get("emailAddress"), i.get("role")))
+            status.append("\n")
+            self.status.append("".join(status))
+
+
+class UnShareHandler(Handler):
+    def __init__(self):
+        super().__init__("unshare")
+        self.status = []
+
+    def process(self, options):
+        self.files = [self.drive.CreateFile(metadata = {"id": id}) for id in options.ids]
+    
+    def execute(self):
+        tasks = []
+        for file in self.files:
+            file.FetchMetadata(fields = "title,alternateLink,permissions")
+            task = threading.Thread(
+                target = self.unshare,
+                args = (file,)
+            )
+            task.start()
+            tasks.append(task)
+        for task in tasks:
+            task.join()
+        print("".join(self.status))
+
+    def unshare(self, file):
+        status = []
+        try:
+            permission_ids = "\n".join(["Permission ID: %-30s\tUser: %s" % (p.get("id"), p.get("emailAddress") or p.get("id")) for p in file["permissions"]])
+            permission_id = input("\nunshare whose access to %s (enter the permission id)?\n%s\n>> \n" % (file["title"], permission_ids))
+            file.DeletePermission(permission_id) 
+        except ApiRequestError as e:
+            status.append("error: cannot unshare this file %s(%s); %s\n" % (file["title"], file["id"], str(e)))
+        else:
+            status.append("unshared %s (%s)\n" % (file["title"], file["id"]))
+            status.append("currently, %s (%s) is being shared with the following users: \n" % (file["title"], file["id"]))
+            for i in file["permissions"]:
+                status.append(">> %s (%s) (role: %s)\n"  % (i.get("name") or i.get("id"), i.get("emailAddress"), i.get("role")))
+            status.append("\n")
+            self.status.append("".join(status))
