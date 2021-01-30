@@ -325,7 +325,7 @@ def parse_auth_command_line():
     )
     app_config_opts.add_argument(
         "--save-credentials-file",
-        default = BASE / "credentials.json",
+        default = str(BASE / "credentials.json"),
         help = "Destination of credentials file. (Default: %s)" % (BASE / "credentials.json")
     )
     app_config_opts.add_argument(
