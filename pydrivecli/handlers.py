@@ -157,7 +157,6 @@ class DownloadHandler(Handler):
             self.export_format = utils.ExportFormat()
         else:
             self.export_format = None
-        print(self.export_format)
 
         # process file filter options
         if options.query:
@@ -171,7 +170,7 @@ class DownloadHandler(Handler):
         self.request_params["q"] = q
 
         # process download options
-        self.download_path = options.path or self.download_path
+        self.download_path = Path(options.path or self.download_path)
 
         # add download task to self.files
         self._add_download_tasks(

@@ -39,12 +39,14 @@ def find_settings_file(filename="settings.yaml"):
 def configure_application(options):
     try:
         settings_file = find_settings_file()
-        if not settings_file.exists() or options.reconfigure:
+        if not settings_file or options.reconfigure:
             raise FileNotFoundError()
         print("Found settings file at %s; will use this settings file." % settings_file)
         return settings_file
     except FileNotFoundError:
         settings = new_settings(options)
+        if not settings_file:
+            settings_file = BASE / "settings.yaml"
         with open(settings_file, "w") as f:
             dump(settings, f, Dumper = Dumper)
         print("Configuring new settings file at %s" % settings_file)
