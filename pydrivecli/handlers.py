@@ -166,7 +166,7 @@ class DownloadHandler(Handler):
         self.request_params["q"] = q
 
         # process download options
-        self.download_path = Path(options.path) or self.download_path
+        self.download_path = Path(options.path or self.download_path)
 
         # add download task to self.files
         self._add_download_tasks(
