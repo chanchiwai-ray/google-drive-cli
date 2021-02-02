@@ -8,13 +8,22 @@ gdrive -h
 
 ## Installation
 
-You can install the command-line tool in a virtual environment using pip3 (this is recommended to avoid  dependencies and versions issues):
+You can install the command-line tool in a virtual environment using pip3 (this is recommended to avoid dependencies and versions issues):
 
 ```
 pip3 install virtualenv
 virtualenv <your-env>
 source <your-env>/bin/activate
-python3 setup.py install
+(your-env) python3 setup.py install
+```
+
+You also need to fork/clone the [developing fork of PyDrive2](https://github.com/chanchiwai-ray/PyDrive2) to use this tool for now, since there're some bugs haven't been fixed in the [maintained fork of Pydrive2](https://github.com/iterative/PyDrive2)
+
+```
+git clone https://github.com/chanchiwai-ray/PyDrive2
+cd ./PyDrive2
+source <your-env>/bin/activate
+(your-env) python3 setup.py install
 ```
 
 ## Configuration
