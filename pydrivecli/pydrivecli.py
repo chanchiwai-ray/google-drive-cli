@@ -1,12 +1,13 @@
 import os
 import sys
 from yaml import dump, Dumper
+from pathlib import Path
 
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 
 from . import utils
-from .utils import BASE, CONFIG, DRIVE, TRASH
+from .utils import BASE, CONFIG, DRIVE, TRASH, HOME
 from .handlers import create_handler
 from .commands import parse_command_line
 from .commands import parse_auth_command_line
@@ -110,7 +111,7 @@ class PyDriveConfigCLI(object):
     def init(self, config):
         drive_path = Path(config["home_directory"], config["drive_directory_name"])
         #trash_path = Path(config["home_directory"], config["trash_directory_name"])
-        paths = (drive_path, trash_path)
+        paths = (drive_path, TRASH)
 
         success = True
         for path in paths:
