@@ -11,8 +11,8 @@ from pydrive2.files import ApiRequestError
 
 from . import requests
 from . import utils
-from .formatter import Printer
-from .formatter import Title
+from . import texts
+from .formatter import Formatter
 
 def create_handler(type):
     if type == "list":
@@ -61,7 +61,7 @@ class ListHandler(Handler):
     def __init__(self):
         super().__init__("list")
         self.request_params = requests.FileListParams()
-        self.printer = Printer()
+        self.formatter = Formatter()
 
     def process(self, options):
         # Display options
@@ -70,11 +70,11 @@ class ListHandler(Handler):
             self.request_params["orderBy"] += ",modifiedDate"
         if options.fields:
             fields = [i.strip() for i in options.fields.strip().split(",")]
-            self.printer.formatter = "\n".join("%-10s: {%s}" % (i.upper(), i) for i in fields) + "\n"
+            self.formatter.template = "\n".join("%-10s: {%s}" % (i.upper(), i) for i in fields) + "\n"
         elif options.long:
-            self.printer.formatter = "{id:40}\t{ownerNames[0]:10}\t{fileSize:>10} MB\t{modifiedDate}\t{title:20}"
+            self.formatter.template = "{id:40}\t{ownerNames[0]:10}\t{fileSize:>10}\t{modifiedDate}\t{title:20}"
         else:
-            self.printer.formatter = "{id:40}\t{title:20}"
+            self.formatter.template = "{id:40}\t{title:20}"
 
         # File Filter Options
         if options.query:
@@ -94,14 +94,14 @@ class ListHandler(Handler):
             q = "'root' in parents and trashed=false"
         self.request_params["q"] = q
 
-    def _execute(self, result, queue):
+    def _execute(self, folders, queue):
         item = queue.get()
         parent_folder = item["parent_folder"]
         child_folder = item["child_folder"]
         param = self.request_params.copy()
         param.update({"q": "'%s' in parents and trashed=false" % child_folder["id"]})
         for f in self.drive.ListFile(param = param).GetList():
-            result["%s/%s" % (parent_folder, child_folder["title"])].append(f)
+            folders["%s/%s" % (parent_folder, child_folder["title"])].append(f)
             if f["mimeType"] == "application/vnd.google-apps.folder":
                 queue.put({
                     "parent_folder": "%s/%s" % (parent_folder, child_folder["title"]),
@@ -113,7 +113,7 @@ class ListHandler(Handler):
             q = Queue()
             folders = defaultdict(list)
             for f in self.drive.ListFile(param = self.request_params).GetList():
-                if f["mimeType"] == "application/vnd.google-apps.folder":
+                if f.get("mimeType") == "application/vnd.google-apps.folder" and f.get("ownedByMe"):
                     q.put({"parent_folder": "./MyDrive", "child_folder": f})
                 if f.get("ownedByMe"):
                     folders["./MyDrive"].append(f)
@@ -121,15 +121,15 @@ class ListHandler(Handler):
                     folders["./ShareWithMe"].append(f)
 
             while not q.empty():
-                self._execute(result, q)
+                self._execute(folders, q)
 
-            for folder, items in result.items():
-                print(Title(folder).use_folder_scheme())
+            for folder, items in folders.items():
+                texts.FolderText(folder).add_prefix("\n").add_suffix(":").show()
                 for f in items:
-                    self.printer.display(f)
+                    self.formatter.display(f)
         else:
             for f in self.drive.ListFile(param = self.request_params).GetList():
-                self.printer.display(f)
+                self.formatter.display(f)
 
 
 class DownloadHandler(Handler):
@@ -151,7 +151,7 @@ class DownloadHandler(Handler):
         if options.export_format:
             self.export_format = utils.ExportFormat.from_format_string(options.export_format)
         elif options.pdf:
-            self.export_format = utitl.ExportFormat()
+            self.export_format = utils.ExportFormat()
             self.export_format.export_all_to_pdf()
         elif options.auto_export:
             self.export_format = utils.ExportFormat()
