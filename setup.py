@@ -33,7 +33,7 @@ if __name__ == "__main__":
         packages = ["pydrivecli"],
         install_requires = [
             "tqdm",
-            "pyyaml"
-#            "pydrive2"
+            "pyyaml",
+            "pydrive2"
         ]
     )
