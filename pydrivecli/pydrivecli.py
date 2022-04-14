@@ -7,7 +7,7 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 
 from . import utils
-from .utils import BASE, CONFIG, DRIVE, TRASH, HOME
+from .utils import BASE, CONFIG, DOWNLOADS, ROOT
 from .handlers import create_handler
 from .commands import parse_command_line
 from .commands import parse_auth_command_line
@@ -82,44 +82,39 @@ class PyDriveConfigCLI(object):
         try:
             path.mkdir()
         except FileExistsError:
-            print("%s already exists. Please re-configure with gdrive-config or delete the existing directory." % path)
-            return False
+            print("%s already exists. Please re-configure with `gdrive-config` or delete the existing directory." % path)
+            sys.exit(1)
         except PermissionError:
-            print("Permission denied: cannot create path at %s. Please re-configure with gdrive-config." % path)
-            return False
+            print("Permission denied: cannot create path at %s. Please re-configure with `gdrive-config`." % path)
+            sys.exit(1)
         except FileNotFoundError:
-            print("Invalid path: %s. Please re-configure with gdrive-config." % path)
-            return False
+            print("Invalid path: %s. Please re-configure with `gdrive-config`." % path)
+            sys.exit(1)
+        except Exception as e:
+            print("\nConfiguration fails with the following errors. Please re-configure with `gdrive-config`.")
+            raise e
         else:
             print("%s has been created." % path)
-            return True
 
     def configure(self, config_file=CONFIG):
-        home = input("Set the home directory for your drive (default: %s): " % HOME).strip()
-        drive_name = input("Set the name for your google drive directory (default: %s): " % DRIVE).strip()
-        #trash_name = input("Set the name for your google drive trash directory (default: %s): " % TRASH).strip()
+        root = input("Set the root directory for your drive (default: %s): " % ROOT).strip()
+        downloads = input("Set the name for your 'Downloads' directory (default: %s): " % DOWNLOADS).strip()
         print()
         with open(config_file, "w") as f:
             config = {
-                "home_directory": home if home != "" else HOME,
-                "drive_directory_name": drive_name if drive_name != "" else DRIVE
-                #"trash_directory_name": trash_name if trash_name != "" else TRASH
+                "root": str(root or ROOT),
+                "downloads": str(downloads or DOWNLOADS)
             }
             dump(config, f, Dumper = Dumper)
         return config
 
     def init(self, config):
-        drive_path = Path(config["home_directory"], config["drive_directory_name"])
-        #trash_path = Path(config["home_directory"], config["trash_directory_name"])
-        paths = (drive_path, TRASH)
+        root = Path(config.pop("root"))
+        paths = [root] + [root / dir_name for dir_name in config.values()]
 
-        success = True
         for path in paths:
-            success &= self.create_directory(path)
+            self.create_directory(path)
 
-        if success:
-            print("\nFinished configuring google drive client.")
-            print("Please authenticate yourself and authorize this app with gdrive-auth if you have not done so yet.")
-            print("Then, use gdrive -h for more information.")
-        else:
-            print("\nConfiguration fails. Please re-configure.")
+        print("\nFinished configuring google drive client.")
+        print("Please authenticate yourself and authorize this app with `gdrive-auth` if you have not done so yet.")
+        print("Then, use `gdrive -h` for more information.")

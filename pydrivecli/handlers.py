@@ -141,7 +141,7 @@ class DownloadHandler(Handler):
             print("error: no configuration file found, please make sure you have configure the application with gdrive-config; exiting...")
             sys.exit()
         else:
-            self.download_path = Path(config["home_directory"], config["drive_directory_name"])
+            self.download_path = Path(config["root"], config["downloads"])
         self.request_params = requests.FileListParams()
         self.export_format = None
         self.files = []

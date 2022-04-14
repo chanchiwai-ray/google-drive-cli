@@ -12,8 +12,9 @@ from pydrive2.settings import InvalidConfigError
 HOME = Path.home()
 BASE = Path.home() / ".gdrive"
 CONFIG = BASE / "config.yaml"
-DRIVE = "google-drive"
-TRASH = "google-drive-trash"
+
+ROOT = HOME / "Google_Drive"
+DOWNLOADS = "Downloads"
 
 def load_configuration():
     try:
